@@ -1,0 +1,5 @@
+bs4==0.0.1
+multiprocess==0.70.12.2
+parsel==1.6.0
+requests==2.25.1
+tqdm==4.61.1
