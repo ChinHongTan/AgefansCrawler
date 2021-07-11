@@ -53,7 +53,7 @@ def print_info(url):  # 输出搜索到的视频信息
         intro = soup.find('div', {'class': 'ellipsis_summary catalog_summary small'})
         try:
             print('\t' + intro.span.string + intro.span.next_sibling.next_sibling.string.replace('\n', '') + '...')
-        except:
+        except Exception:
             content = str(intro.span.next_sibling.next_sibling).replace('\n', '').replace('<span>', '').replace(
                 '<br/>', '').replace('</span>', '').replace('&lt;', '') + '...'
             print('\t' + intro.span.string + content)
@@ -75,7 +75,7 @@ def get_new_url(info, referer, rel_path, name, video_url):
                 episodes_url[li.a.string.replace(' ', '')] = unquote(request(new_url).json()['result'])
             else:
                 continue
-        except:
+        except Exception:
             try:
                 new_url = 'http://agefans.org/myapp/_get_mp4s?id={}'.format(ID)
                 url_lists = request(new_url).json()
@@ -92,7 +92,7 @@ def get_new_url(info, referer, rel_path, name, video_url):
                 print(type(e), e)
     full_url = episodes_url | episodes_urls
     return full_url
-                    
+
 def get_relurl(name): # 爬取动漫视频网址
     global referer, rel_path
     rel_path = path + '/' + name
@@ -118,7 +118,7 @@ def write_file(url, filename, position, name):
         if url.startswith('//'):
             url = 'https:' + url
         if url.endswith('.m3u8'):
-            pass    
+            pass
         r = requests.get(url, stream = True)
         total_size = int(r.headers.get('content-length'))
         if total_size < 1024 * 1024:
@@ -132,7 +132,6 @@ def write_file(url, filename, position, name):
                 return stop
     except Exception as e:
         print(type(e), e)
-        pass
 
 def video_download(s_dict, rel_path): # 下载视频，如果视频小于1MB就删除视频
     position = s_dict['position']
@@ -156,7 +155,7 @@ def video_download(s_dict, rel_path): # 下载视频，如果视频小于1MB就�
         else:
             stop = write_file(s_dict[name], filename, position, name)
             if stop: break
-    return 
+    return
 
 def user_ui():
     print('#' * 25 + '\tAGE动漫离线助手\t' + '#' * 25)
@@ -169,7 +168,7 @@ def user_ui():
     rel_path, full_array = get_relurl(name)
     pool = Pool(len(full_array) + 1)
     download_func = partial(video_download, rel_path = rel_path)
-    results = list(tqdm(pool.imap(download_func, full_array), desc = "正在下载: " + name + "...", total = len(full_array), position = 0))
+    list(tqdm(pool.imap(download_func, full_array), desc = "正在下载: " + name + "...", total = len(full_array), position = 0))
     pool.close()
     pool.join()
     end = time.time()
