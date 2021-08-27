@@ -160,7 +160,7 @@ def video_download(s_dict, rel_path): # 下载视频，如果视频小于1MB就�
 def user_ui():
     print('#' * 25 + '\tAGE动漫离线助手\t' + '#' * 25)
     keyword = input('请输入搜索关键字：')
-    url = 'http://agefans.org/search?q=' + keyword
+    url = 'http://agefans.org/search?q1=' + keyword
     print_info(url)
     choice = int(input('请输入序号选择：'))
     name = list(video_url.keys())[choice - 1]
