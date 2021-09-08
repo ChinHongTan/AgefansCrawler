@@ -9,22 +9,30 @@ from urllib.parse import unquote
 from multiprocess import Pool
 from functools import partial
 
-referer = 'http://agefans.org/'
-header = {
-    'Cookie': '__cfduid=d9216f203c70cad8785fd8f10dcf2fb5d1594952490; csrftoken=OBJWjqkshWbI1IGirAjQqa9IKy9KOBp9T1a16N6GrA5qTcTdc4azooNitiumjxYA',
-    'Host': 'agefans.org',
-    'Referer': referer,
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36 Edg/84.0.522.40'
+referer = 'https://agefans.org/'
+
+headers = {
+    "accept": "*/*",
+    "accept-language": "en-GB,en;q=0.9,zh-TW;q=0.8,zh-CN;q=0.7,zh;q=0.6,en-US;q=0.5",
+    "sec-ch-ua": "\"Google Chrome\";v=\"93\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"93\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "x-requested-with": "XMLHttpRequest",
+    "cookie": "csrftoken=znqjvvGN2N94f37hd6RVlBFT0nUeIK07a3LWLIS6P4sM7YkhshJVPPrx9uo4ZDTB"
 }
+
 
 path = './Spider' # 视频储存位置
 video_url = {}  # 搜索到的视频信息
 episodes_url = {}  # 视频下载地址
-episodes_urls = {}  #分段视频链接
+episodes_urls = {}  # 分段视频链接
 rel_path = ''
 
 def request(url):
-    r = requests.get(url, headers=header)
+    r = requests.get(url, headers=headers)
     r.raise_for_status()
     r.encoding = 'utf-8'
     return r
@@ -39,7 +47,7 @@ def print_info(url):  # 输出搜索到的视频信息
     for info in search_info:
         Serial += 1
         soup = BeautifulSoup(info, 'html.parser')
-        video_url[soup.a.h5.string] = 'http://agefans.org' + soup.a.attrs['href']
+        video_url[soup.a.h5.string] = 'https://agefans.org' + soup.a.attrs['href']
         print("{:0>2d}:\t《 ".format(Serial) + soup.a.h5.string + ' 》')
         for div in soup.find_all('div', {'class': ''}):
             print('\t' + div.span.string + div.span.next_sibling.next_sibling.string)
@@ -61,7 +69,7 @@ def print_info(url):  # 输出搜索到的视频信息
 
 def get_new_url(info, referer, rel_path, name, video_url):
     li = BeautifulSoup(info, 'html.parser')
-    url = 'http://agefans.org/myapp/_get_ep_plays?{}&anime_id={}'.format(li.a.attrs['href'].split('_', 1)[-1].replace('_', '='), video_url[name].split('/')[-1])
+    url = 'https://agefans.org/myapp/_get_ep_plays?{}&anime_id={}'.format(li.a.attrs['href'].split('_', 1)[-1].replace('_', '='), video_url[name].split('/')[-1])
     referer = video_url[name] + li.a.attrs['href']
     ID_dict = {}
     counter = 0
@@ -70,19 +78,19 @@ def get_new_url(info, referer, rel_path, name, video_url):
         counter += 1
     for ID in ID_dict.values():
         try:
-            new_url = 'http://agefans.org/myapp/_get_e_i?url={}&quote=1'.format(ID)
+            new_url = 'https://agefans.org/myapp/_get_e_i?url={}&quote=1'.format(ID)
             if unquote(request(new_url).json()['result']).startswith('https://') or unquote(request(new_url).json()['result']).startswith('http://') or unquote(request(new_url).json()['result']).startswith('//'):
                 episodes_url[li.a.string.replace(' ', '')] = unquote(request(new_url).json()['result'])
             else:
                 continue
         except Exception:
             try:
-                new_url = 'http://agefans.org/myapp/_get_mp4s?id={}'.format(ID)
+                new_url = 'https://agefans.org/myapp/_get_mp4s?id={}'.format(ID)
                 url_lists = request(new_url).json()
                 if url_lists:
                     episodes_urls.setasdefault(li.a.string.replace(' ', ''), []).append(url_lists)
                 else:
-                    new_url = 'http://agefans.org/myapp/_get_raw?id={}'.format(ID)
+                    new_url = 'https://agefans.org/myapp/_get_raw?id={}'.format(ID)
                     download_url = request(new_url).text
                     if download_url.startswith('https://') or download_url.startswith('http://') or download_url.startswith('//'):
                         episodes_urls.setdefault(li.a.string.replace(' ', ''), []).append(download_url)
